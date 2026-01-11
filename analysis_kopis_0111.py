@@ -280,7 +280,7 @@ def main():
         raise RuntimeError("환경변수 KOPIS_API_KEY가 비어있어요. (export KOPIS_API_KEY=... 먼저)")
 
     # 최근 3년: 2023-01-01 ~ 2025-12-31 (현재 대화 기준)
-    start = datetime(2023, 1, 1)
+    start = datetime(2025, 1, 1)
     end = datetime(2025, 12, 31)
 
     print("[1/4] Fetch list (pblprfr, CCCD=대중음악) ...")
