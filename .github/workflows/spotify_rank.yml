@@ -1,0 +1,43 @@
+name: Spotify Artist Metrics + Ranking
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "artists.txt"
+      - "artist_country_map.csv"
+      - "analysis_spotify_rank.py"
+      - "requirements_spotify_rank.txt"
+      - ".github/workflows/spotify_rank.yml"
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements_spotify_rank.txt
+
+      - name: Run analysis
+        env:
+          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+        run: |
+          python analysis_spotify_rank.py
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: spotify_artist_outputs
+          path: |
+            artist_metrics.csv
+            artist_ranked.csv
