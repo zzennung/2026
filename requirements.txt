@@ -2,3 +2,7 @@ requests
 pandas
 gspread
 google-auth
+lxml
+tqdm
+scikit-learn
+matplotlib
