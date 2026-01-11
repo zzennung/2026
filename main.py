@@ -15,6 +15,7 @@ SPREADSHEET_ID = "1EtJvJapMlMjxTqRWyWimzk7EKxW9cGBOVKQEZF4jbsU"
 
 # Github Actions에서 입력받은 시설명 (기본값: 예술의전당)
 FACILITY_NAME = os.environ.get('FACILITY_NAME', '예술의전당')
+HALL_NAME = os.environ.get('HALL_NAME')  # 예: "올림픽홀"
 
 def get_facility_id(name):
     """3.1 공연시설 목록 조회 API를 사용하여 시설 ID 획득 [cite: 24, 27]"""
