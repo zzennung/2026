@@ -153,12 +153,24 @@ def extract_price_krw(text: str) -> float:
     return float((vals[mid - 1] + vals[mid]) / 2)
 
 
+def _as_str(x) -> str:
+    # None / NaN(float) 안전 처리
+    if x is None:
+        return ""
+    if isinstance(x, float) and math.isnan(x):
+        return ""
+    return str(x)
+
 def primary_subgenre(prfnm: str, prfcast: str, sty: str) -> str:
     """
     “대중음악 내” 세부 포맷(룰 기반) 1차 태깅.
     *원하면 너 회사 기준으로 룰 더 촘촘히 맞춰줄 수 있음.
     """
-    text = " ".join([prfnm or "", prfcast or "", sty or ""]).lower()
+    text = " ".join([
+        _as_str(prfnm),
+        _as_str(prfcast),
+        _as_str(sty),
+    ]).lower()
 
     rules = [
         ("virtual", r"(버츄얼|virtual|vtuber|v-tuber|브이튜버|이세계아이돌|홀로라이브|니지산지)"),
@@ -174,6 +186,7 @@ def primary_subgenre(prfnm: str, prfcast: str, sty: str) -> str:
         if re.search(pat, text, flags=re.IGNORECASE):
             return label
     return "other_pop"
+
 
 
 def build_features(df: pd.DataFrame) -> pd.DataFrame:
