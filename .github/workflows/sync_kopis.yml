@@ -9,6 +9,12 @@ on:
         required: true
         default: '예술의전당'
         type: string
+      hall_name:
+        description: '특정 공연장(홀)만 필터링하려면 입력하세요 (예: 올림픽홀, 주경기장). 비우면 전체 조회'
+        required: false
+        default: ''
+        type: string
+
 
 jobs:
   run-sync:
@@ -36,4 +42,5 @@ jobs:
           # workflow_dispatch로 입력받은 시설명을 환경 변수로 전달합니다.
           # 스케줄 실행 시에는 기본값인 '예술의전당'이 사용됩니다.
           FACILITY_NAME: ${{ github.event.inputs.facility_name || '예술의전당' }}
+          HALL_NAME: ${{ github.event.inputs.hall_name || '' }}
         run: python main.py
