@@ -1,9 +1,6 @@
 name: KOPIS Performance Data Sync
 
 on:
-  schedule:
-    # UTC 00:00은 한국 시간(KST)으로 오전 09:00입니다.
-    - cron: '0 0 * * *'
   workflow_dispatch:
     # Github 상에서 직접 시설명을 입력받아 실행할 수 있는 설정입니다.
     inputs:
