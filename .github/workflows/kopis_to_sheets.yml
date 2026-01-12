@@ -1,13 +1,14 @@
-name: KOPIS to Google Sheets
+name: KOPIS Performances -> Google Sheets
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 3 * * 1"   # 매주 월요일 12:00 KST (UTC+9) 기준 03:00 UTC
+    - cron: "0 3 * * 1"  # 매주 월요일 12:00 KST (UTC 03:00)
 
 jobs:
   run:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -18,18 +19,22 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install --upgrade pip
+          pip install requests pandas gspread google-auth tqdm
 
-      - name: Run KOPIS sync script
-  env:
-    KOPIS_KEY: ${{ secrets.KOPIS_API_KEY }}
+      - name: Run sync
+        env:
+          # KOPIS secret name is KOPIS_API_KEY
+          KOPIS_KEY: ${{ secrets.KOPIS_API_KEY }}
 
-    SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
-    GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
+          # Google Sheets
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
 
-    SHEET_NAME: performances_raw
-    START_DATE: "2025-01-01"
-    END_DATE: "2026-01-31"
-  run: |
-    python kopis_to_sheets.py
-
+          # Options
+          SHEET_NAME: performances_raw
+          START_DATE: "2025-01-01"
+          END_DATE: "2026-01-31"
+        run: |
+          python kopis_to_sheets.py
