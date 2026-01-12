@@ -1,10 +1,9 @@
 import os
-import base64
+import json
 import requests
 import pandas as pd
 from datetime import datetime, timedelta
 from tqdm import tqdm
-from dateutil.parser import parse
 import xml.etree.ElementTree as ET
 
 import gspread
@@ -14,10 +13,15 @@ from google.oauth2.service_account import Credentials
 # ======================
 # ENV
 # ======================
-KOPIS_KEY = os.environ["KOPIS_KEY"]
-SPREADSHEET_ID = os.environ["SPREADSHEET_ID"]
-SHEET_NAME = os.environ.get("SHEET_NAME", "performances_raw")
+KOPIS_KEY = os.getenv("KOPIS_KEY", "").strip()
+if not KOPIS_KEY:
+    raise RuntimeError("KOPIS_KEY is missing. Check GitHub Secrets mapping.")
 
+SPREADSHEET_ID = os.getenv("SPREADSHEET_ID", "").strip()
+if not SPREADSHEET_ID:
+    raise RuntimeError("SPREADSHEET_ID is missing. Check GitHub Secrets mapping.")
+
+SHEET_NAME = os.environ.get("SHEET_NAME", "performances_raw")
 START_DATE = os.environ.get("START_DATE", "2025-01-01")
 END_DATE = os.environ.get("END_DATE", "2026-01-31")
 
@@ -49,7 +53,12 @@ def fetch_kopis_list(stdate: str, eddate: str, rows=100):
         }
 
         r = requests.get(BASE, params=params, timeout=30)
-        r.raise_for_status()
+
+        # 에러 났을 때 원인 파악 쉽게 로그
+        if r.status_code >= 400:
+            print("Request URL:", r.url)
+            print("Response (first 500 chars):", r.text[:500])
+            r.raise_for_status()
 
         root = ET.fromstring(r.text)
         dbs = root.findall(".//db")
@@ -76,47 +85,10 @@ def fetch_kopis_list(stdate: str, eddate: str, rows=100):
 
 
 def get_gspread_client():
-    # GitHub Secrets에 base64로 넣은 서비스계정 JSON을 복원
-    sa_b64 = os.environ["GOOGLE_SA_JSON_B64"]
-    sa_json = base64.b64decode(sa_b64).decode("utf-8")
-
-    scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-    creds = Credentials.from_service_account_info(eval(sa_json) if sa_json.strip().startswith("{") is False else __import__("json").loads(sa_json), scopes=scopes)
-    return gspread.authorize(creds)
-
-
-def upsert_sheet(spreadsheet_id: str, sheet_name: str, df: pd.DataFrame):
-    gc = get_gspread_client()
-    sh = gc.open_by_key(spreadsheet_id)
-
-    try:
-        ws = sh.worksheet(sheet_name)
-    except gspread.WorksheetNotFound:
-        ws = sh.add_worksheet(title=sheet_name, rows=1000, cols=10)
-
-    ws.clear()
-
-    values = [df.columns.tolist()] + df.fillna("").values.tolist()
-    ws.update(values)
-
-
-def main():
-    all_rows = []
-    chunks = list(chunk_dates(START_DATE, END_DATE, max_days=31))
-
-    for st, ed in tqdm(chunks, desc="Fetching"):
-        all_rows.extend(fetch_kopis_list(st, ed, rows=100))
-
-    df = pd.DataFrame(all_rows)
-    if df.empty:
-        raise RuntimeError("KOPIS returned no rows. Check dates/key.")
-
-    df = df.drop_duplicates(subset=["공연ID"]).reset_index(drop=True)
-    df_out = df[["공연명", "공연장"]].copy()
-
-    upsert_sheet(SPREADSHEET_ID, SHEET_NAME, df_out)
-    print(f"Done. Rows uploaded: {len(df_out)}")
-
-
-if __name__ == "__main__":
-    main()
+    """
+    GitHub Secrets에 'GOOGLE_SERVICE_ACCOUNT' 이름으로 저장된
+    서비스계정 JSON(원문 문자열)을 그대로 읽어 인증합니다.
+    """
+    sa_json = os.getenv("GOOGLE_SERVICE_ACCOUNT", "").strip()
+    if not sa_json:
+        raise RuntimeError("GOOGLE_SERVICE_ACCOUNT is missing. Add it to GitHub Secrets and pass via workflow env.")
