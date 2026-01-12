@@ -22,8 +22,8 @@ jobs:
 
       - name: Run script
         env:
-          KOPIS_KEY: ${{ secrets.KOPIS_KEY }}
-          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          KOPIS_KEY: ${{ secrets.KOPIS_API_KEY }}
+          SPREADSHEET_ID: ${{ 1_dw0IF9CIqrbktOr49MWWAbNQz83Z9XZMn9wd7dfUSs }}
           GOOGLE_SA_JSON_B64: ${{ secrets.GOOGLE_SA_JSON_B64 }}
           SHEET_NAME: performances_raw
           START_DATE: "2025-01-01"
