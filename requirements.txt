@@ -6,3 +6,4 @@ lxml
 tqdm
 scikit-learn
 matplotlib
+python-dateutil
