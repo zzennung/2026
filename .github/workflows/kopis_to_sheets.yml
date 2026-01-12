@@ -20,12 +20,16 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run script
-        env:
-          KOPIS_KEY: ${{ secrets.KOPIS_API_KEY }}
-          GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
-          GOOGLE_SA_JSON_B64: ${{ secrets.GOOGLE_SA_JSON_B64 }}
-          SHEET_NAME: performances_raw
-          START_DATE: "2025-01-01"
-          END_DATE: "2026-01-31"
-        run: python kopis_to_sheets.py
+      - name: Run KOPIS sync script
+  env:
+    KOPIS_KEY: ${{ secrets.KOPIS_API_KEY }}
+
+    SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+    GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
+
+    SHEET_NAME: performances_raw
+    START_DATE: "2025-01-01"
+    END_DATE: "2026-01-31"
+  run: |
+    python kopis_to_sheets.py
+
